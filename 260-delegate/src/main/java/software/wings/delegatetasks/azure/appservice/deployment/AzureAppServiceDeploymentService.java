@@ -7,7 +7,16 @@
 
 package software.wings.delegatetasks.azure.appservice.deployment;
 
-import static io.harness.azure.model.AzureConstants.*;
+import static io.harness.azure.model.AzureConstants.DEPLOY_ARTIFACT;
+import static io.harness.azure.model.AzureConstants.SLOT_STARTING_STATUS_CHECK_INTERVAL;
+import static io.harness.azure.model.AzureConstants.SLOT_STOPPING_STATUS_CHECK_INTERVAL;
+import static io.harness.azure.model.AzureConstants.SLOT_SWAP;
+import static io.harness.azure.model.AzureConstants.SLOT_TRAFFIC_PERCENTAGE;
+import static io.harness.azure.model.AzureConstants.START_DEPLOYMENT_SLOT;
+import static io.harness.azure.model.AzureConstants.STOP_DEPLOYMENT_SLOT;
+import static io.harness.azure.model.AzureConstants.SUCCESS_REQUEST;
+import static io.harness.azure.model.AzureConstants.UPDATE_DEPLOYMENT_SLOT_CONFIGURATION_SETTINGS;
+import static io.harness.azure.model.AzureConstants.UPDATE_DEPLOYMENT_SLOT_CONTAINER_SETTINGS;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
 import static io.harness.logging.CommandExecutionStatus.FAILURE;
 import static io.harness.logging.CommandExecutionStatus.SUCCESS;
