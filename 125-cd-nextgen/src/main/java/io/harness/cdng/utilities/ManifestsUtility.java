@@ -10,15 +10,19 @@ package io.harness.cdng.utilities;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.visitor.YamlTypes;
+import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.InvalidRequestException;
 import io.harness.exception.YamlException;
 import io.harness.pms.contracts.plan.YamlUpdates;
+import io.harness.pms.plan.creation.PlanCreatorUtils;
 import io.harness.pms.yaml.YamlField;
 import io.harness.pms.yaml.YamlNode;
 import io.harness.pms.yaml.YamlUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
+import java.util.Map;
+
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.PIPELINE)
@@ -55,13 +59,14 @@ public class ManifestsUtility {
 
     if (stageOverrideField == null) {
       YamlField stageOverridesYamlField = fetchOverridesYamlField(serviceField);
-      setYamlUpdate(stageOverridesYamlField, yamlUpdates);
+      PlanCreatorUtils.setYamlUpdate(stageOverridesYamlField,yamlUpdates);
       return stageOverridesYamlField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
     }
-    if (stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG) == null) {
-      YamlField artifactsYamlField = fetchManifestYamlFieldUnderStageOverride(stageOverrideField);
-      setYamlUpdate(artifactsYamlField, yamlUpdates);
-      return artifactsYamlField;
+    YamlField manifestsField =  stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
+    if (manifestsField == null || !EmptyPredicate.isNotEmpty(manifestsField.getNode().asArray())) {
+      YamlField manifestsYamlField = fetchManifestYamlFieldUnderStageOverride(stageOverrideField);
+      PlanCreatorUtils.setYamlUpdate(manifestsYamlField,yamlUpdates);
+      return manifestsYamlField;
     }
     return stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
   }
@@ -84,5 +89,14 @@ public class ManifestsUtility {
     return new YamlField(YamlTypes.STAGE_OVERRIDES_CONFIG,
         new YamlNode(YamlTypes.STAGE_OVERRIDES_CONFIG, StageOverridesUtility.getStageOverridesJsonNode(),
             serviceField.getNode()));
+  }
+
+  public YamlField fetchIndividualManifestYamlField(
+          YamlField manifestListYamlField, String individualManifestIdentifier, Map<String, YamlNode> manifestIdentifierToYamlNodeMap) {
+    if (manifestIdentifierToYamlNodeMap.containsKey(individualManifestIdentifier)) {
+      return manifestIdentifierToYamlNodeMap.get(individualManifestIdentifier).getField(YamlTypes.MANIFEST_CONFIG);
+    }
+
+    return manifestListYamlField.getNode().asArray().get(0).getField(YamlTypes.MANIFEST_CONFIG);
   }
 }

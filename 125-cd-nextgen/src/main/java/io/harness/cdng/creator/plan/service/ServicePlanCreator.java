@@ -165,7 +165,6 @@ public class ServicePlanCreator extends ChildrenPlanCreator<ServiceConfig> {
     actualServiceConfig = applyUseFromStageOverrides(actualServiceConfig);
 
     List<String> serviceSpecChildrenIds = new ArrayList<>();
-    PlanCreationResponse response;
 
     boolean createPlanForArtifacts = validateCreatePlanNodeForArtifacts(actualServiceConfig);
     if (createPlanForArtifacts) {
