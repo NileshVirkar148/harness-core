@@ -18,13 +18,13 @@ import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_403_FORBIDDEN;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_404_HELM_REPO;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_CHART_VERSION_IMPROPER_CONSTRAINT;
-import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_INVALID_VALUE_TYPE;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_INVALID_YAML;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_MALFORMED_URL;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_MISSING_PROTOCOL_HANDLER;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_NO_CHART_FOUND;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_NO_CHART_VERSION_FOUND;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_UNKNOWN_COMMAND_FLAG;
+import static io.harness.delegate.task.helm.HelmExceptionConstants.Explanations.EXPLAIN_VALIDATE_ERROR;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.HelmCliErrorMessages.CHART_VERSION_IMPROPER_CONSTRAINT;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.HelmCliErrorMessages.FORBIDDEN_403;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.HelmCliErrorMessages.INVALID_VALUE_TYPE;
@@ -45,13 +45,13 @@ import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_40
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_403_FORBIDDEN;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_404_HELM_REPO;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_CHART_VERSION_IMPROPER_CONSTRAINT;
-import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_INVALID_VALUE_TYPE;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_INVALID_YAML;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_MALFORMED_URL;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_MISSING_PROTOCOL_HANDLER;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_NO_CHART_FOUND;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_NO_CHART_VERSION_FOUND;
 import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_UNKNOWN_COMMAND_FLAG;
+import static io.harness.delegate.task.helm.HelmExceptionConstants.Hints.HINT_VALIDATE_ERROR;
 
 import static com.amazonaws.util.StringUtils.lowerCase;
 import static org.apache.commons.lang3.StringUtils.defaultIfEmpty;
@@ -181,7 +181,7 @@ public class HelmClientRuntimeExceptionHandler implements ExceptionHandler {
     final String lowerCaseMessage = lowerCase(helmClientException.getMessage());
     if (lowerCaseMessage.contains(INVALID_VALUE_TYPE)) {
       return NestedExceptionUtils.hintWithExplanationException(
-          HINT_INVALID_VALUE_TYPE, EXPLAIN_INVALID_VALUE_TYPE, helmClientException);
+          HINT_VALIDATE_ERROR, EXPLAIN_VALIDATE_ERROR, helmClientException);
     }
 
     // TODO : Handle some more negative scenarios here
