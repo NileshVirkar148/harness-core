@@ -111,7 +111,6 @@ public class YamlGitConfigResource {
 
   @PUT
   @Path("/disable")
-  @InternalApi
   @ApiOperation(value = "Disable git experience", nickname = "disableGitSync")
   public boolean putGitExperience(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotBlank @QueryParam(
