@@ -57,7 +57,7 @@ public class SLOPolicyExpansionHandler implements JsonExpansionHandler {
         ProjectParams.builder().accountIdentifier(accountId).projectIdentifier(projectId).orgIdentifier(orgId).build();
 
     List<ServiceLevelObjective> serviceLevelObjectiveList =
-        serviceLevelObjectiveService.getSLOByMonitoredServiceIdentifier(projectParams, monitoredServiceRef);
+        serviceLevelObjectiveService.getByMonitoredServiceIdentifier(projectParams, monitoredServiceRef);
     if (isEmpty(serviceLevelObjectiveList)) {
       sloPolicyDTO =
           SLOPolicyDTO.builder().statusOfMonitoredService(SLOPolicyDTO.MonitoredServiceStatus.NOT_CONFIGURED).build();

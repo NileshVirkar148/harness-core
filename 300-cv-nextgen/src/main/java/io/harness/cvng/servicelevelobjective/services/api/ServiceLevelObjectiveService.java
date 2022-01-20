@@ -29,7 +29,7 @@ public interface ServiceLevelObjectiveService {
 
   PageResponse<ServiceLevelObjectiveResponse> get(ProjectParams projectParams, Integer offset, Integer pageSize,
       ServiceLevelObjectiveFilter serviceLevelObjectiveFilter);
-  List<ServiceLevelObjective> getSLOByMonitoredServiceIdentifier(
+  List<ServiceLevelObjective> getByMonitoredServiceIdentifier(
       ProjectParams projectParams, String monitoredServiceIdentifier);
   SLORiskCountResponse getRiskCount(ProjectParams projectParams, SLODashboardApiFilter serviceLevelObjectiveFilter);
 
