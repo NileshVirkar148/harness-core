@@ -1481,6 +1481,13 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       PhysicalInfrastructureMapping pyInfraMapping = (PhysicalInfrastructureMapping) infrastructureMapping;
       if (isNotEmpty(pyInfraMapping.getProvisionerId())) {
         if (isNotEmpty(pyInfraMapping.hosts())) {
+          if (featureFlagService.isEnabled(DEPLOY_TO_INLINE_HOSTS, infrastructureMapping.getAccountId())
+              && isNotEmpty(selectionParams.getHostNames())) {
+            return selectionParams.getHostNames()
+                .stream()
+                .map(hostName -> buildHost(pyInfraMapping, hostName))
+                .collect(toList());
+          }
           return pyInfraMapping.hosts();
         } else {
           throw new InvalidRequestException(
@@ -1496,19 +1503,7 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       if (featureFlagService.isEnabled(DEPLOY_TO_INLINE_HOSTS, infrastructureMapping.getAccountId())) {
         addSpecificHosts(selectionParams, hostNames);
       }
-      return hostNames.stream()
-          .map(hostName
-              -> aHost()
-                     .withHostName(hostName)
-                     .withPublicDns(hostName)
-                     .withAppId(pyInfraMapping.getAppId())
-                     .withEnvId(pyInfraMapping.getEnvId())
-                     .withInfraMappingId(pyInfraMapping.getUuid())
-                     .withInfraDefinitionId(pyInfraMapping.getInfrastructureDefinitionId())
-                     .withHostConnAttr(pyInfraMapping.getHostConnectionAttrs())
-                     .withServiceTemplateId(serviceTemplateHelper.fetchServiceTemplateId(pyInfraMapping))
-                     .build())
-          .collect(toList());
+      return hostNames.stream().map(hostName -> buildHost(pyInfraMapping, hostName)).collect(toList());
     } else if (infrastructureMapping instanceof PhysicalInfrastructureMappingWinRm) {
       PhysicalInfrastructureMappingWinRm pyInfraMappingWinRm =
           (PhysicalInfrastructureMappingWinRm) infrastructureMapping;
@@ -1561,6 +1556,19 @@ public class InfrastructureMappingServiceImpl implements InfrastructureMappingSe
       throw new InvalidRequestException(
           "Unsupported infrastructure mapping: " + infrastructureMapping.getClass().getName());
     }
+  }
+
+  private Host buildHost(PhysicalInfrastructureMapping pyInfraMapping, String hostName) {
+    return aHost()
+        .withHostName(hostName)
+        .withPublicDns(hostName)
+        .withAppId(pyInfraMapping.getAppId())
+        .withEnvId(pyInfraMapping.getEnvId())
+        .withInfraMappingId(pyInfraMapping.getUuid())
+        .withInfraDefinitionId(pyInfraMapping.getInfrastructureDefinitionId())
+        .withHostConnAttr(pyInfraMapping.getHostConnectionAttrs())
+        .withServiceTemplateId(serviceTemplateHelper.fetchServiceTemplateId(pyInfraMapping))
+        .build();
   }
 
   private void addSpecificHosts(ServiceInstanceSelectionParams selectionParams, List<String> hostNames) {

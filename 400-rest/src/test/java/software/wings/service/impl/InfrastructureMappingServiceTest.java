@@ -53,6 +53,7 @@ import static software.wings.utils.WingsTestConstants.HOST_CONN_ATTR_ID;
 import static software.wings.utils.WingsTestConstants.HOST_NAME;
 import static software.wings.utils.WingsTestConstants.INFRA_DEFINITION_ID;
 import static software.wings.utils.WingsTestConstants.INFRA_MAPPING_ID;
+import static software.wings.utils.WingsTestConstants.PROVISIONER_ID;
 import static software.wings.utils.WingsTestConstants.SERVICE_ID;
 import static software.wings.utils.WingsTestConstants.SERVICE_INSTANCE_ID;
 import static software.wings.utils.WingsTestConstants.SERVICE_NAME;
@@ -712,6 +713,48 @@ public class InfrastructureMappingServiceTest extends WingsBaseTest {
             .withComputeProviderType(PHYSICAL_DATA_CENTER.name())
             .withUuid(INFRA_MAPPING_ID)
             .withServiceTemplateId(TEMPLATE_ID)
+            .withHostNames(singletonList(HOST_NAME))
+            .build();
+
+    when(featureFlagService.isEnabled(eq(DEPLOY_TO_INLINE_HOSTS), any())).thenReturn(true);
+    when(infrastructureMappingService.get(APP_ID, INFRA_MAPPING_ID)).thenReturn(physicalInfrastructureMapping);
+    when(settingsService.get(COMPUTE_PROVIDER_ID))
+        .thenReturn(
+            aSettingAttribute().withUuid(COMPUTE_PROVIDER_ID).withValue(aPhysicalDataCenterConfig().build()).build());
+    when(serviceInstanceService.updateInstanceMappings(
+             any(ServiceTemplate.class), any(InfrastructureMapping.class), any(List.class)))
+        .thenReturn(
+            aPageResponse().withResponse(asList(aServiceInstance().withUuid(SERVICE_INSTANCE_ID).build())).build());
+
+    List<ServiceInstance> serviceInstances =
+        infrastructureMappingService.selectServiceInstances(APP_ID, INFRA_MAPPING_ID, null,
+            aServiceInstanceSelectionParams()
+                .withCount(3)
+                .withHostNames(Arrays.asList(HOST_NAME, "host1", "host2"))
+                .build());
+    ArgumentCaptor<List> argumentCaptor = ArgumentCaptor.forClass(List.class);
+
+    assertThat(serviceInstances).containsExactly(aServiceInstance().withUuid(SERVICE_INSTANCE_ID).build());
+    verify(serviceInstanceService)
+        .updateInstanceMappings(any(ServiceTemplate.class), any(InfrastructureMapping.class), argumentCaptor.capture());
+    assertThat(argumentCaptor.getValue().size()).isEqualTo(3);
+  }
+
+  @Test
+  @Owner(developers = TMACARI)
+  @Category(UnitTests.class)
+  public void shouldSelectServiceInstancesForPhysicalInfrastructureWhenDeployOnInlineHostsDynamicProvisionedInfra() {
+    PhysicalInfrastructureMapping physicalInfrastructureMapping =
+        aPhysicalInfrastructureMapping()
+            .withProvisionerId(PROVISIONER_ID)
+            .withHostConnectionAttrs(HOST_CONN_ATTR_ID)
+            .withComputeProviderSettingId(COMPUTE_PROVIDER_ID)
+            .withAppId(APP_ID)
+            .withEnvId(ENV_ID)
+            .withComputeProviderType(PHYSICAL_DATA_CENTER.name())
+            .withUuid(INFRA_MAPPING_ID)
+            .withServiceTemplateId(TEMPLATE_ID)
+            .withHosts(singletonList(aHost().withHostName(HOST_NAME).build()))
             .withHostNames(singletonList(HOST_NAME))
             .build();
 
