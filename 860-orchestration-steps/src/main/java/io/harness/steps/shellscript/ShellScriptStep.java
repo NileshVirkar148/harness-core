@@ -26,6 +26,9 @@ import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.tasks.TaskRequest;
 import io.harness.pms.contracts.steps.StepCategory;
 import io.harness.pms.contracts.steps.StepType;
+import io.harness.pms.sdk.core.execution.SdkGraphVisualizationDataService;
+import io.harness.pms.sdk.core.execution.SdkGraphVisualizationDataServiceImpl;
+import io.harness.pms.sdk.core.steps.executables.StepDetailsInfo;
 import io.harness.pms.sdk.core.steps.io.StepInputPackage;
 import io.harness.pms.sdk.core.steps.io.StepResponse;
 import io.harness.pms.sdk.core.steps.io.StepResponse.StepResponseBuilder;
@@ -41,6 +44,8 @@ import software.wings.beans.TaskType;
 
 import com.google.inject.Inject;
 import java.util.List;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @OwnedBy(CDC)
@@ -52,6 +57,7 @@ public class ShellScriptStep extends TaskExecutableWithRollback<ShellScriptTaskR
   @Inject private KryoSerializer kryoSerializer;
   @Inject private StepHelper stepHelper;
   @Inject private ShellScriptHelperService shellScriptHelperService;
+  @Inject private SdkGraphVisualizationDataService sdkGraphVisualizationDataService;
 
   @Override
   public Class<StepElementParameters> getStepParametersClass() {
@@ -111,6 +117,12 @@ public class ShellScriptStep extends TaskExecutableWithRollback<ShellScriptTaskR
                                             .build());
       }
     }
+    sdkGraphVisualizationDataService.publishStepDetailInformation(
+        ambiance, TestStepDetailsInfo.builder().build(), "test", StepCategory.STAGE);
     return stepResponseBuilder.build();
   }
+
+  @Data
+  @Builder
+  private static class TestStepDetailsInfo implements StepDetailsInfo {}
 }
