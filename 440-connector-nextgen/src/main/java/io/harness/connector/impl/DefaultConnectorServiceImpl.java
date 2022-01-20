@@ -619,7 +619,7 @@ public class DefaultConnectorServiceImpl implements ConnectorService {
               new ConnectorDeleteEvent(accountIdentifier, connectorMapper.writeDTO(existingConnector).getConnector()));
     }
 
-    connectorRepository.save(existingConnector, null, ChangeType.NONE, supplier);
+    connectorRepository.save(existingConnector, null, changeType, supplier);
 
     return true;
   }
