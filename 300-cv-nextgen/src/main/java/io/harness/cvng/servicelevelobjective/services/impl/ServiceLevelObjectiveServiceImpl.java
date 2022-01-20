@@ -12,10 +12,12 @@ import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
+import io.harness.cvng.core.utils.DateTimeUtils;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse;
 import io.harness.cvng.servicelevelobjective.SLORiskCountResponse.RiskCount;
 import io.harness.cvng.servicelevelobjective.beans.ErrorBudgetRisk;
 import io.harness.cvng.servicelevelobjective.beans.SLODashboardApiFilter;
+import io.harness.cvng.servicelevelobjective.beans.SLODashboardWidget.SLOGraphData;
 import io.harness.cvng.servicelevelobjective.beans.SLOTarget;
 import io.harness.cvng.servicelevelobjective.beans.SLOTarget.SLOTargetKeys;
 import io.harness.cvng.servicelevelobjective.beans.SLOTargetType;
@@ -26,9 +28,11 @@ import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveDTO;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveFilter;
 import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveResponse;
 import io.harness.cvng.servicelevelobjective.entities.SLOHealthIndicator;
+import io.harness.cvng.servicelevelobjective.entities.ServiceLevelIndicator;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective.ServiceLevelObjectiveKeys;
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective.TimePeriod;
+import io.harness.cvng.servicelevelobjective.services.api.SLIRecordService;
 import io.harness.cvng.servicelevelobjective.services.api.SLOHealthIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelIndicatorService;
 import io.harness.cvng.servicelevelobjective.services.api.ServiceLevelObjectiveService;
@@ -43,9 +47,11 @@ import io.harness.utils.PageUtils;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,11 +69,11 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
   @Inject private HPersistence hPersistence;
 
   @Inject private MonitoredServiceService monitoredServiceService;
-  @Inject Clock clock;
+  @Inject private Clock clock;
   @Inject private ServiceLevelIndicatorService serviceLevelIndicatorService;
   @Inject private SLOHealthIndicatorService sloHealthIndicatorService;
   @Inject private Map<SLOTargetType, SLOTargetTransformer> sloTargetTypeSLOTargetTransformerMap;
-
+  @Inject private SLIRecordService sliRecordService;
   @Override
   public ServiceLevelObjectiveResponse create(
       ProjectParams projectParams, ServiceLevelObjectiveDTO serviceLevelObjectiveDTO) {
@@ -261,6 +267,34 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
         .filter(ServiceLevelObjectiveKeys.projectIdentifier, projectParams.getProjectIdentifier())
         .filter(ServiceLevelObjectiveKeys.identifier, identifier)
         .get();
+  }
+
+  @Override
+  public Map<ServiceLevelObjective, SLOGraphData> getSLOGraphData(
+      List<ServiceLevelObjective> serviceLevelObjectiveList) {
+    Map<ServiceLevelObjective, SLOGraphData> serviceLevelObjectiveSLOGraphDataMap = new HashMap<>();
+    for (ServiceLevelObjective serviceLevelObjective : serviceLevelObjectiveList) {
+      Preconditions.checkState(serviceLevelObjective.getServiceLevelIndicators().size() == 1,
+          "Only one service level indicator is supported");
+      ProjectParams projectParams = ProjectParams.builder()
+                                        .accountIdentifier(serviceLevelObjective.getAccountId())
+                                        .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
+                                        .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
+                                        .build();
+      ServiceLevelIndicator serviceLevelIndicator = serviceLevelIndicatorService.getServiceLevelIndicator(
+          projectParams, serviceLevelObjective.getServiceLevelIndicators().get(0));
+
+      LocalDateTime currentLocalDate = LocalDateTime.ofInstant(clock.instant(), serviceLevelObjective.getZoneOffset());
+      int totalErrorBudgetMinutes = serviceLevelObjective.getTotalErrorBudgetMinutes(currentLocalDate);
+      ServiceLevelObjective.TimePeriod timePeriod = serviceLevelObjective.getCurrentTimeRange(currentLocalDate);
+      Instant currentTimeMinute = DateTimeUtils.roundDownTo1MinBoundary(clock.instant());
+
+      SLOGraphData sloGraphData = sliRecordService.getGraphData(serviceLevelIndicator.getUuid(),
+          timePeriod.getStartTime(serviceLevelObjective.getZoneOffset()), currentTimeMinute, totalErrorBudgetMinutes,
+          serviceLevelIndicator.getSliMissingDataType(), serviceLevelIndicator.getVersion());
+      serviceLevelObjectiveSLOGraphDataMap.put(serviceLevelObjective, sloGraphData);
+    }
+    return serviceLevelObjectiveSLOGraphDataMap;
   }
 
   private ServiceLevelObjective updateSLOEntity(ProjectParams projectParams,

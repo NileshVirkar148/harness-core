@@ -28,7 +28,7 @@ import lombok.experimental.FieldDefaults;
 @ApiModel("SLOPolicy")
 @OwnedBy(CV)
 public class SLOPolicyDTO implements YamlDTO {
-  @JsonProperty("sloErrorBudgetRemaining") @Valid double sloErrorBudgetRemaining;
+  @JsonProperty("sloErrorBudgetRemainingPercentage") @Valid Double sloErrorBudgetRemainingPercentage;
   @JsonProperty("statusOfMonitoredService") @Valid MonitoredServiceStatus statusOfMonitoredService;
 
   public enum MonitoredServiceStatus { CONFIGURED, NOT_CONFIGURED }

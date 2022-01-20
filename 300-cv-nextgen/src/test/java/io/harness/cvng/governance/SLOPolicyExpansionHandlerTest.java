@@ -109,7 +109,7 @@ public class SLOPolicyExpansionHandlerTest extends CvNextGenTestBase {
   @Category(UnitTests.class)
   public void testExpand() throws IOException {
     SLOPolicyDTO sloPolicyDTO = SLOPolicyDTO.builder()
-                                    .sloErrorBudgetRemaining(50)
+                                    .sloErrorBudgetRemainingPercentage(50D)
                                     .statusOfMonitoredService(MonitoredServiceStatus.CONFIGURED)
                                     .build();
     final String yaml = IOUtils.resourceToString(
