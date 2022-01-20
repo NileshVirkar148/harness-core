@@ -7,11 +7,12 @@
 
 package io.harness.cvng.governance.services;
 
+import static io.harness.cvng.core.beans.params.ServiceEnvironmentParams.builderWithProjectParams;
 import static io.harness.cvng.governance.beans.ExpansionKeysConstants.ENVIRONMENT_REF;
 import static io.harness.cvng.governance.beans.ExpansionKeysConstants.INFRASTRUCTURE;
 import static io.harness.cvng.governance.beans.ExpansionKeysConstants.SERVICE_CONFIG;
 import static io.harness.cvng.governance.beans.ExpansionKeysConstants.SERVICE_REF;
-import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.cvng.core.beans.monitoredService.MonitoredServiceResponse;
 import io.harness.cvng.core.beans.params.ProjectParams;
@@ -32,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class SLOPolicyExpansionHandler implements JsonExpansionHandler {
   @Inject ServiceLevelObjectiveService serviceLevelObjectiveService;
@@ -42,34 +44,37 @@ public class SLOPolicyExpansionHandler implements JsonExpansionHandler {
     String accountId = metadata.getAccountId();
     String orgId = metadata.getOrgId();
     String projectId = metadata.getProjectId();
-    String serviceRef = fieldValue.get(SERVICE_CONFIG).get(SERVICE_REF).asText();
-    String environmentRef = fieldValue.get(INFRASTRUCTURE).get(ENVIRONMENT_REF).asText();
-    ServiceEnvironmentParams serviceEnvironmentParams =
-        ServiceEnvironmentParams.builder().serviceIdentifier(serviceRef).environmentIdentifier(environmentRef).build();
-    MonitoredServiceResponse monitoredServiceResponse = monitoredServiceService.get(serviceEnvironmentParams);
-    SLOPolicyDTO sloPolicyDTO;
     ProjectParams projectParams =
         ProjectParams.builder().accountIdentifier(accountId).projectIdentifier(projectId).orgIdentifier(orgId).build();
+    String serviceRef = fieldValue.get(SERVICE_CONFIG).get(SERVICE_REF).asText();
+    String environmentRef = fieldValue.get(INFRASTRUCTURE).get(ENVIRONMENT_REF).asText();
+    ServiceEnvironmentParams serviceEnvironmentParams = builderWithProjectParams(projectParams)
+                                                            .serviceIdentifier(serviceRef)
+                                                            .environmentIdentifier(environmentRef)
+                                                            .build();
+    MonitoredServiceResponse monitoredServiceResponse = monitoredServiceService.get(serviceEnvironmentParams);
 
-    List<ServiceLevelObjective> serviceLevelObjectiveList =
-        serviceLevelObjectiveService.getByMonitoredServiceIdentifier(
-            projectParams, monitoredServiceResponse.getMonitoredServiceDTO().getIdentifier());
-    if (isEmpty(serviceLevelObjectiveList)) {
-      sloPolicyDTO =
-          SLOPolicyDTO.builder().statusOfMonitoredService(SLOPolicyDTO.MonitoredServiceStatus.NOT_CONFIGURED).build();
-    } else {
-      double sloErrorBudgetRemainingPercentage = 100D;
-      Map<ServiceLevelObjective, SLOGraphData> serviceLevelObjectiveSLOGraphDataMap =
-          serviceLevelObjectiveService.getSLOGraphData(serviceLevelObjectiveList);
-      for (Map.Entry<ServiceLevelObjective, SLOGraphData> entry : serviceLevelObjectiveSLOGraphDataMap.entrySet()) {
-        if (sloErrorBudgetRemainingPercentage > entry.getValue().getErrorBudgetRemainingPercentage()) {
-          sloErrorBudgetRemainingPercentage = entry.getValue().getErrorBudgetRemainingPercentage();
+    SLOPolicyDTO sloPolicyDTO =
+        SLOPolicyDTO.builder().statusOfMonitoredService(SLOPolicyDTO.MonitoredServiceStatus.NOT_CONFIGURED).build();
+    if (Objects.nonNull(monitoredServiceResponse)
+        && Objects.nonNull(monitoredServiceResponse.getMonitoredServiceDTO())) {
+      List<ServiceLevelObjective> serviceLevelObjectiveList =
+          serviceLevelObjectiveService.getByMonitoredServiceIdentifier(
+              projectParams, monitoredServiceResponse.getMonitoredServiceDTO().getIdentifier());
+      if (isNotEmpty(serviceLevelObjectiveList)) {
+        double sloErrorBudgetRemainingPercentage = 100D;
+        Map<ServiceLevelObjective, SLOGraphData> serviceLevelObjectiveSLOGraphDataMap =
+            serviceLevelObjectiveService.getSLOGraphData(serviceLevelObjectiveList);
+        for (Map.Entry<ServiceLevelObjective, SLOGraphData> entry : serviceLevelObjectiveSLOGraphDataMap.entrySet()) {
+          if (sloErrorBudgetRemainingPercentage > entry.getValue().getErrorBudgetRemainingPercentage()) {
+            sloErrorBudgetRemainingPercentage = entry.getValue().getErrorBudgetRemainingPercentage();
+          }
         }
+        sloPolicyDTO = SLOPolicyDTO.builder()
+                           .sloErrorBudgetRemainingPercentage(sloErrorBudgetRemainingPercentage)
+                           .statusOfMonitoredService(SLOPolicyDTO.MonitoredServiceStatus.CONFIGURED)
+                           .build();
       }
-      sloPolicyDTO = SLOPolicyDTO.builder()
-                         .sloErrorBudgetRemainingPercentage(sloErrorBudgetRemainingPercentage)
-                         .statusOfMonitoredService(SLOPolicyDTO.MonitoredServiceStatus.CONFIGURED)
-                         .build();
     }
     ExpandedValue value = SLOPolicyExpandedValue.builder().sloPolicyDTO(sloPolicyDTO).build();
 

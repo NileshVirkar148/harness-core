@@ -279,7 +279,7 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
       ProjectParams projectParams = ProjectParams.builder()
                                         .accountIdentifier(serviceLevelObjective.getAccountId())
                                         .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
-                                        .orgIdentifier(serviceLevelObjective.getOrgIdentifier())
+                                        .projectIdentifier(serviceLevelObjective.getProjectIdentifier())
                                         .build();
       ServiceLevelIndicator serviceLevelIndicator = serviceLevelIndicatorService.getServiceLevelIndicator(
           projectParams, serviceLevelObjective.getServiceLevelIndicators().get(0));
