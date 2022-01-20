@@ -31,5 +31,5 @@ public class SLOPolicyDTO implements YamlDTO {
   @JsonProperty("sloErrorBudgetRemaining") @Valid double sloErrorBudgetRemaining;
   @JsonProperty("sloErrorBudgetRemaining") @Valid MonitoredServiceStatus statusOfMonitoredService;
 
-  enum MonitoredServiceStatus { CONFIGURED, NOT_CONFIGURED }
+  public enum MonitoredServiceStatus { CONFIGURED, NOT_CONFIGURED }
 }

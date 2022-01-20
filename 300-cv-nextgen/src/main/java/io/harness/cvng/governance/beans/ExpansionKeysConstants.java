@@ -7,10 +7,11 @@
 
 package io.harness.cvng.governance.beans;
 
-import io.harness.annotations.dev.HarnessTeam;
-import io.harness.annotations.dev.OwnedBy;
-
-@OwnedBy(HarnessTeam.CV)
 public class ExpansionKeysConstants {
-  static final String SLO_POLICY_EXPANSION_KEY = "sloPolicy";
+  public static final String SLO_POLICY_EXPANSION_KEY = "sloPolicy";
+  public static final String SERVICE_CONFIG = "serviceConfig";
+  public static final String SERVICE_REF = "serviceRef";
+  public static final String INFRASTRUCTURE = "infrastructure";
+  public static final String ENVIRONMENT_REF = "environmentRef";
+  public static final String MONITORED_SERVICE_DELIMITER = "_";
 }

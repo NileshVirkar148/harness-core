@@ -7,6 +7,8 @@
 
 package io.harness.cvng.servicelevelobjective.services.impl;
 
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
+
 import io.harness.cvng.core.beans.params.PageParams;
 import io.harness.cvng.core.beans.params.ProjectParams;
 import io.harness.cvng.core.services.api.monitoredService.MonitoredServiceService;
@@ -52,7 +54,6 @@ import java.util.stream.Collectors;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.Sort;
 import org.mongodb.morphia.query.UpdateOperations;
@@ -123,6 +124,12 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
   }
 
   @Override
+  public List<ServiceLevelObjective> getSLOByMonitoredServiceIdentifier(
+      ProjectParams projectParams, String monitoredServiceIdentifier) {
+    return get(projectParams, Filter.builder().monitoredServiceIdentifier(monitoredServiceIdentifier).build());
+  }
+
+  @Override
   public SLORiskCountResponse getRiskCount(ProjectParams projectParams, SLODashboardApiFilter sloDashboardApiFilter) {
     List<ServiceLevelObjective> serviceLevelObjectiveList = get(projectParams,
         Filter.builder()
@@ -179,23 +186,23 @@ public class ServiceLevelObjectiveServiceImpl implements ServiceLevelObjectiveSe
             .filter(ServiceLevelObjectiveKeys.orgIdentifier, projectParams.getOrgIdentifier())
             .filter(ServiceLevelObjectiveKeys.projectIdentifier, projectParams.getProjectIdentifier())
             .order(Sort.descending(ServiceLevelObjectiveKeys.lastUpdatedAt));
-    if (CollectionUtils.isNotEmpty(filter.getUserJourneys())) {
+    if (isNotEmpty(filter.getUserJourneys())) {
       sloQuery.field(ServiceLevelObjectiveKeys.userJourneyIdentifier).in(filter.getUserJourneys());
     }
-    if (CollectionUtils.isNotEmpty(filter.getIdentifiers())) {
+    if (isNotEmpty(filter.getIdentifiers())) {
       sloQuery.field(ServiceLevelObjectiveKeys.identifier).in(filter.getIdentifiers());
     }
-    if (CollectionUtils.isNotEmpty(filter.getSliTypes())) {
+    if (isNotEmpty(filter.getSliTypes())) {
       sloQuery.field(ServiceLevelObjectiveKeys.type).in(filter.getSliTypes());
     }
-    if (CollectionUtils.isNotEmpty(filter.getTargetTypes())) {
+    if (isNotEmpty(filter.getTargetTypes())) {
       sloQuery.field(ServiceLevelObjectiveKeys.sloTarget + "." + SLOTargetKeys.type).in(filter.getTargetTypes());
     }
     if (filter.getMonitoredServiceIdentifier() != null) {
       sloQuery.filter(ServiceLevelObjectiveKeys.monitoredServiceIdentifier, filter.monitoredServiceIdentifier);
     }
     List<ServiceLevelObjective> serviceLevelObjectiveList = sloQuery.asList();
-    if (CollectionUtils.isNotEmpty(filter.getErrorBudgetRisks())) {
+    if (isNotEmpty(filter.getErrorBudgetRisks())) {
       List<SLOHealthIndicator> sloHealthIndicators = sloHealthIndicatorService.getBySLOIdentifiers(projectParams,
           serviceLevelObjectiveList.stream()
               .map(serviceLevelObjective -> serviceLevelObjective.getIdentifier())

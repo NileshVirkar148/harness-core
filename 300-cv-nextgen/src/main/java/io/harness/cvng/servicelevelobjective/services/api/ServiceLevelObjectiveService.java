@@ -17,6 +17,8 @@ import io.harness.cvng.servicelevelobjective.beans.ServiceLevelObjectiveResponse
 import io.harness.cvng.servicelevelobjective.entities.ServiceLevelObjective;
 import io.harness.ng.beans.PageResponse;
 
+import java.util.List;
+
 public interface ServiceLevelObjectiveService {
   ServiceLevelObjectiveResponse create(ProjectParams projectParams, ServiceLevelObjectiveDTO serviceLevelObjectiveDTO);
 
@@ -27,7 +29,8 @@ public interface ServiceLevelObjectiveService {
 
   PageResponse<ServiceLevelObjectiveResponse> get(ProjectParams projectParams, Integer offset, Integer pageSize,
       ServiceLevelObjectiveFilter serviceLevelObjectiveFilter);
-
+  List<ServiceLevelObjective> getSLOByMonitoredServiceIdentifier(
+      ProjectParams projectParams, String monitoredServiceIdentifier);
   SLORiskCountResponse getRiskCount(ProjectParams projectParams, SLODashboardApiFilter serviceLevelObjectiveFilter);
 
   ServiceLevelObjectiveResponse get(ProjectParams projectParams, String identifier);
