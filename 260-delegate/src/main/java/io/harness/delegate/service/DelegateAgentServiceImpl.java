@@ -713,7 +713,7 @@ public class DelegateAgentServiceImpl implements DelegateAgentService {
         }
       }
 
-      if(!isServer) {
+      if (!isServer) {
         synchronized (waiter) {
           while (waiter.get()) {
             waiter.wait();

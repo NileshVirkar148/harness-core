@@ -1,22 +1,17 @@
 package io.harness.delegate.app.resource;
 
 import static io.harness.annotations.dev.HarnessTeam.DEL;
-import static io.harness.annotations.dev.HarnessTeam.PL;
-import static io.harness.exception.WingsException.USER;
-import static io.harness.maintenance.MaintenanceController.getMaintenanceFlag;
+
+import io.harness.annotations.dev.OwnedBy;
+import io.harness.health.HealthException;
+import io.harness.health.HealthService;
+import io.harness.ng.core.dto.ResponseDTO;
+import io.harness.security.annotations.PublicApi;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.Timed;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.inject.Inject;
-import io.harness.annotations.ExposeInternalException;
-import io.harness.annotations.dev.OwnedBy;
-import io.harness.eraro.ErrorCode;
-import io.harness.exception.NoResultFoundException;
-import io.harness.health.HealthException;
-import io.harness.health.HealthService;
-import io.harness.ng.core.dto.ResponseDTO;
-import io.harness.security.annotations.PublicApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.ws.rs.Consumes;
