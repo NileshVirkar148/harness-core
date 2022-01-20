@@ -4,6 +4,7 @@ server:
     - type: http
       port: 3460
       maxRequestHeaderSize: 100KiB
+  rootPath: /api
   maxThreads: 1024
 
 # Delegate Config

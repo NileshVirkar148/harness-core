@@ -93,7 +93,7 @@ public class DelegateAgentApplication extends Application<DelegateAgentConfig> {
     log.info("Starting Delegate");
     log.info("Process: {}", ManagementFactory.getRuntimeMXBean().getName());
 
-    injector.getInstance(DelegateAgentService.class).run(false);
+    injector.getInstance(DelegateAgentService.class).run(false, true);
   }
 
   @Override
