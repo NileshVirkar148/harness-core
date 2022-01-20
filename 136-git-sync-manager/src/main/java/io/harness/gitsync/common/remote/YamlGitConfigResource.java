@@ -38,7 +38,6 @@ import io.harness.ng.core.OrgIdentifier;
 import io.harness.ng.core.ProjectIdentifier;
 import io.harness.ng.core.dto.ErrorDTO;
 import io.harness.ng.core.dto.FailureDTO;
-import io.harness.security.annotations.InternalApi;
 
 import com.google.inject.Inject;
 import io.swagger.annotations.Api;
