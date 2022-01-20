@@ -16,6 +16,7 @@ import io.harness.pms.contracts.execution.failure.FailureData;
 import io.harness.pms.contracts.execution.failure.FailureInfo;
 import io.harness.pms.contracts.execution.failure.FailureType;
 
+import java.util.Collections;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
@@ -27,6 +28,9 @@ public interface Adviser {
 
   default List<FailureType> getAllFailureTypes(AdvisingEvent advisingEvent) {
     FailureInfo failureInfo = advisingEvent.getFailureInfo();
+    if (failureInfo == null) {
+      return Collections.emptyList();
+    }
     List<FailureType> failureTypesList = failureInfo.getFailureTypesList();
     List<FailureData> failureDataList = failureInfo.getFailureDataList();
     for (FailureData failureData : failureDataList) {
