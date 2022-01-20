@@ -9,11 +9,13 @@ package io.harness.ng.core.entitysetupusage.impl;
 
 import static io.harness.annotations.dev.HarnessTeam.DX;
 import static io.harness.data.structure.EmptyPredicate.isEmpty;
+import static io.harness.data.structure.EmptyPredicate.isNotEmpty;
 
 import io.harness.EntityType;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.exception.DuplicateFieldException;
+import io.harness.exception.InvalidRequestException;
 import io.harness.ng.core.EntityDetail;
 import io.harness.ng.core.entitysetupusage.EntitySetupUsageQueryFilterHelper;
 import io.harness.ng.core.entitysetupusage.dto.EntityReferencesDTO;
@@ -35,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +126,7 @@ public class EntitySetupUsageServiceImpl implements EntitySetupUsageService {
   }
 
   private Boolean deleteAllReferredByEntity(String accountIdentifier, String referredByEntityFQN,
-      EntityType referredByEntityType, EntityType referredEntityType) {
+      EntityType referredByEntityType, @Nullable EntityType referredEntityType) {
     long numberOfRecordsDeleted = 0;
     Criteria criteria = entitySetupUsageFilterHelper.createCriteriaForDeletingAllReferredByEntries(
         accountIdentifier, referredByEntityFQN, referredByEntityType, referredEntityType);
@@ -138,11 +141,12 @@ public class EntitySetupUsageServiceImpl implements EntitySetupUsageService {
 
   // todo(abhinav): make delete and create a transactional operation
   @Override
-  public Boolean flushSave(List<EntitySetupUsage> entitySetupUsage, EntityType entityTypeFromChannel,
+  public Boolean flushSave(List<EntitySetupUsage> entitySetupUsage, @Nullable EntityType entityTypeFromChannel,
       boolean deleteOldReferredByRecords, String accountId) {
     if (isEmpty(entitySetupUsage)) {
       return true;
     }
+
     if (deleteOldReferredByRecords) {
       deleteAllReferredByEntity(accountId,
           entitySetupUsage.get(0).getReferredByEntity().getEntityRef().getFullyQualifiedName(),
