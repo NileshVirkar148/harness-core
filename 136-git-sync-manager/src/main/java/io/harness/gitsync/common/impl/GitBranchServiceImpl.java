@@ -132,16 +132,13 @@ public class GitBranchServiceImpl implements GitBranchService {
         projectIdentifier, orgIdentifier, accountId, gitConnectorRef);
 
     for (String branchName : branches) {
-      GitBranch gitBranch = get(accountId, GitUtils.convertToUrlWithGit(repoUrl), branchName);
-      if (gitBranch == null) {
-        gitBranch = GitBranch.builder()
-                        .accountIdentifier(accountId)
-                        .branchName(branchName)
-                        .branchSyncStatus(BranchSyncStatus.UNSYNCED)
-                        .repoURL(GitUtils.convertToUrlWithGit(repoUrl))
-                        .build();
-        save(gitBranch);
-      }
+      GitBranch gitBranch = GitBranch.builder()
+                                .accountIdentifier(accountId)
+                                .branchName(branchName)
+                                .branchSyncStatus(BranchSyncStatus.UNSYNCED)
+                                .repoURL(GitUtils.convertToUrlWithGit(repoUrl))
+                                .build();
+      save(gitBranch);
     }
   }
 
