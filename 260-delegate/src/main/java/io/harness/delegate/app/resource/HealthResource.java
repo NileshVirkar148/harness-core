@@ -43,7 +43,7 @@ public class HealthResource {
   public ResponseDTO<String> get() throws Exception {
     final HealthCheck.Result check = healthService.check();
     if (check.isHealthy()) {
-      return ResponseDTO.newResponse("healthy");
+      return ResponseDTO.newResponse(HealthService.HEALTHY);
     }
     throw new HealthException(check.getMessage(), check.getError());
   }

@@ -1,5 +1,7 @@
 # Dropwizard config
 server:
+  allowedMethods: ["GET"]
+  adminConnectors: []
   applicationConnectors:
     - type: http
       port: 3460
