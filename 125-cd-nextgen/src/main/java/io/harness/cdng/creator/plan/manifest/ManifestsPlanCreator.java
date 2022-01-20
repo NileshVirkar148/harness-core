@@ -24,11 +24,9 @@ import io.harness.cdng.manifest.yaml.ManifestOverrideSetWrapper;
 import io.harness.cdng.manifest.yaml.ManifestOverrideSets;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.utilities.ManifestsUtility;
-import io.harness.cdng.utilities.SideCarsListArtifactsUtility;
 import io.harness.cdng.visitor.YamlTypes;
 import io.harness.data.structure.EmptyPredicate;
 import io.harness.data.structure.UUIDGenerator;
-import io.harness.delegate.task.artifacts.ArtifactSourceConstants;
 import io.harness.exception.InvalidRequestException;
 import io.harness.pms.contracts.facilitators.FacilitatorObtainment;
 import io.harness.pms.contracts.facilitators.FacilitatorType;
@@ -48,36 +46,23 @@ import io.harness.steps.fork.ForkStepParameters;
 
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.CDC)
 public class ManifestsPlanCreator extends ChildrenPlanCreator<ManifestsListConfigWrapper> {
   @Inject KryoSerializer kryoSerializer;
-
-  private PlanCreationResponse createPlanForManifestNode(String identifier, ManifestInfo manifestInfo) {
-    PlanNode manifestPlanNode =
-        PlanNode.builder()
-            .uuid(UUIDGenerator.generateUuid())
-            .stepType(ManifestStep.STEP_TYPE)
-            .name(PlanCreatorConstants.MANIFEST_NODE_NAME)
-            .identifier(identifier)
-            .stepParameters(manifestInfo.getParams())
-            .facilitatorObtainment(
-                FacilitatorObtainment.newBuilder()
-                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.SYNC).build())
-                    .build())
-            .skipExpressionChain(false)
-            .build();
-    return PlanCreationResponse.builder().planNode(manifestPlanNode).build();
-  }
 
   @Override
   public LinkedHashMap<String, PlanCreationResponse> createPlanForChildrenNodes(

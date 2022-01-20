@@ -21,6 +21,9 @@ import io.harness.cdng.artifact.bean.yaml.PrimaryArtifact;
 import io.harness.cdng.artifact.bean.yaml.SidecarArtifact;
 import io.harness.cdng.artifact.bean.yaml.SidecarArtifactWrapper;
 import io.harness.cdng.licenserestriction.EnforcementValidator;
+import io.harness.cdng.manifest.ManifestConfigType;
+import io.harness.cdng.manifest.yaml.ManifestConfig;
+import io.harness.cdng.manifest.yaml.ManifestConfigWrapper;
 import io.harness.cdng.service.beans.KubernetesServiceSpec;
 import io.harness.cdng.service.beans.ServiceConfig;
 import io.harness.cdng.service.beans.ServiceDefinition;
@@ -40,6 +43,8 @@ import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -456,26 +461,45 @@ public class ServicePlanCreatorTest extends CDNGTestBase {
   @Owner(developers = PRASHANTSHARMA)
   @Category(UnitTests.class)
   public void testValidateCreatePlanNodeForManifests() {
-    DockerHubArtifactConfig primaryArtifact =
-        DockerHubArtifactConfig.builder().primaryArtifact(true).identifier("ARTIFACT1").build();
-    DockerHubArtifactConfig sidecarArtifact =
-        DockerHubArtifactConfig.builder().primaryArtifact(false).identifier("ARTIFACT2").build();
-    ArtifactListConfig artifactListConfig1 =
-        ArtifactListConfig.builder()
-            .primary(PrimaryArtifact.builder().spec(primaryArtifact).build())
-            .sidecar(SidecarArtifactWrapper.builder()
-                         .sidecar(SidecarArtifact.builder().spec(sidecarArtifact).build())
-                         .build())
+    ManifestConfigWrapper k8sManifest =
+        ManifestConfigWrapper.builder()
+            .manifest(ManifestConfig.builder().identifier("test").type(ManifestConfigType.K8_MANIFEST).build())
+            .build();
+    ManifestConfigWrapper valuesManifest =
+        ManifestConfigWrapper.builder()
+            .manifest(ManifestConfig.builder().identifier("test").type(ManifestConfigType.VALUES).build())
             .build();
 
-    // Case1: having both primary and sidecars artifacts
-    ServiceConfig serviceConfig1 =
+    // Case1: having manifests in service definition
+    ServiceConfig serviceConfig =
+        ServiceConfig.builder()
+            .serviceDefinition(
+                ServiceDefinition.builder()
+                    .serviceSpec(
+                        KubernetesServiceSpec.builder().manifests(Arrays.asList(k8sManifest, valuesManifest)).build())
+                    .build())
+            .build();
+    boolean result = servicePlanCreator.validateCreatePlanNodeForManifests(serviceConfig);
+    assertThat(result).isEqualTo(true);
+
+    // Case2: having empty list of manifests
+    serviceConfig =
         ServiceConfig.builder()
             .serviceDefinition(ServiceDefinition.builder()
-                                   .serviceSpec(KubernetesServiceSpec.builder().artifacts(artifactListConfig1).build())
+                                   .serviceSpec(KubernetesServiceSpec.builder().manifests(new ArrayList<>()).build())
                                    .build())
             .build();
-    boolean result = servicePlanCreator.validateCreatePlanNodeForArtifacts(serviceConfig1);
+    result = servicePlanCreator.validateCreatePlanNodeForManifests(serviceConfig);
+    assertThat(result).isEqualTo(false);
+
+    // StageOverrides: having non-empty manifests list
+    serviceConfig =
+        ServiceConfig.builder()
+            .serviceDefinition(ServiceDefinition.builder().serviceSpec(KubernetesServiceSpec.builder().build()).build())
+            .stageOverrides(
+                StageOverridesConfig.builder().manifests(Arrays.asList(k8sManifest, valuesManifest)).build())
+            .build();
+    result = servicePlanCreator.validateCreatePlanNodeForManifests(serviceConfig);
     assertThat(result).isEqualTo(true);
   }
 }
