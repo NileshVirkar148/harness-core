@@ -7,7 +7,6 @@
 
 package io.harness.cdng.creator.plan.manifest;
 
-import com.google.protobuf.ByteString;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.steps.ArtifactStepParameters;
@@ -48,6 +47,7 @@ import io.harness.serializer.KryoSerializer;
 import io.harness.steps.fork.ForkStepParameters;
 
 import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -101,47 +101,48 @@ public class ManifestsPlanCreator extends ChildrenPlanCreator<ManifestsListConfi
 
     List<YamlNode> yamlNodes = Optional.of(manifestsYamlField.getNode().asArray()).orElse(Collections.emptyList());
     Map<String, YamlNode> manifestIdentifierToYamlNodeMap = yamlNodes.stream().collect(
-            Collectors.toMap(e -> e.getField(YamlTypes.MANIFEST_CONFIG).getNode().getIdentifier(), k -> k));
+        Collectors.toMap(e -> e.getField(YamlTypes.MANIFEST_CONFIG).getNode().getIdentifier(), k -> k));
 
     for (Map.Entry<String, ManifestInfo> entry : manifestList.getManifests().entrySet()) {
-      addDependenciesForIndividualManifest(manifestsYamlField,entry.getKey(),entry.getValue().getParams(),manifestIdentifierToYamlNodeMap,planCreationResponseMap);
+      addDependenciesForIndividualManifest(manifestsYamlField, entry.getKey(), entry.getValue().getParams(),
+          manifestIdentifierToYamlNodeMap, planCreationResponseMap);
     }
 
     return planCreationResponseMap;
   }
 
   public String addDependenciesForIndividualManifest(YamlField manifestsYamlField, String manifestIdentifier,
-                                                     ManifestStepParameters stepParameters, Map<String, YamlNode> manifestIdentifierToYamlNodeMap,
-                                                    LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap) {
+      ManifestStepParameters stepParameters, Map<String, YamlNode> manifestIdentifierToYamlNodeMap,
+      LinkedHashMap<String, PlanCreationResponse> planCreationResponseMap) {
     YamlField individualManifest = ManifestsUtility.fetchIndividualManifestYamlField(
-            manifestsYamlField, manifestIdentifier, manifestIdentifierToYamlNodeMap);
+        manifestsYamlField, manifestIdentifier, manifestIdentifierToYamlNodeMap);
 
     String individualManifestPlanNodeId = UUIDGenerator.generateUuid();
     Map<String, ByteString> metadataDependency =
-            prepareMetadataForIndividualManifestPlanCreator(individualManifestPlanNodeId, stepParameters);
+        prepareMetadataForIndividualManifestPlanCreator(individualManifestPlanNodeId, stepParameters);
 
     Map<String, YamlField> dependenciesMap = new HashMap<>();
     dependenciesMap.put(individualManifestPlanNodeId, individualManifest);
-    PlanCreationResponse.PlanCreationResponseBuilder individualManifestPlanResponse = PlanCreationResponse.builder().dependencies(
+    PlanCreationResponse.PlanCreationResponseBuilder individualManifestPlanResponse =
+        PlanCreationResponse.builder().dependencies(
             DependenciesUtils.toDependenciesProto(dependenciesMap)
-                    .toBuilder()
-                    .putDependencyMetadata(
-                            individualManifestPlanNodeId, Dependency.newBuilder().putAllMetadata(metadataDependency).build())
-                    .build());
+                .toBuilder()
+                .putDependencyMetadata(
+                    individualManifestPlanNodeId, Dependency.newBuilder().putAllMetadata(metadataDependency).build())
+                .build());
     planCreationResponseMap.put(individualManifestPlanNodeId, individualManifestPlanResponse.build());
     return individualManifestPlanNodeId;
   }
 
   public Map<String, ByteString> prepareMetadataForIndividualManifestPlanCreator(
-          String individualManifestPlanNodeId, ManifestStepParameters stepParameters) {
+      String individualManifestPlanNodeId, ManifestStepParameters stepParameters) {
     Map<String, ByteString> metadataDependency = new HashMap<>();
     metadataDependency.put(
-            YamlTypes.UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(individualManifestPlanNodeId)));
+        YamlTypes.UUID, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(individualManifestPlanNodeId)));
     metadataDependency.put(PlanCreatorConstants.MANIFEST_STEP_PARAMETER,
-            ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stepParameters)));
+        ByteString.copyFrom(kryoSerializer.asDeflatedBytes(stepParameters)));
     return metadataDependency;
   }
-
 
   @Override
   public PlanNode createPlanForParentNode(

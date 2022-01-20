@@ -13,8 +13,6 @@ import static io.harness.rule.OwnerRule.ACASIAN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.category.element.UnitTests;
@@ -32,25 +30,24 @@ import io.harness.pms.contracts.plan.Dependency;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationContext;
 import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.rule.Owner;
+import io.harness.serializer.KryoSerializer;
 
+import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.harness.serializer.KryoSerializer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 
 @OwnedBy(HarnessTeam.CDC)
 public class ManifestPlanCreatorTest extends CDNGTestBase {
-  @Inject
-  private KryoSerializer kryoSerializer;
-  @Inject @InjectMocks
-  ManifestsPlanCreator manifestsPlanCreator;
+  @Inject private KryoSerializer kryoSerializer;
+  @Inject @InjectMocks ManifestsPlanCreator manifestsPlanCreator;
   @Test
   @Owner(developers = ACASIAN)
   @Category(UnitTests.class)
@@ -74,12 +71,13 @@ public class ManifestPlanCreatorTest extends CDNGTestBase {
             .build();
 
     Map<String, ByteString> metadataDependency = new HashMap<>();
-            metadataDependency.put(YamlTypes.SERVICE_CONFIG, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceConfig)));
+    metadataDependency.put(
+        YamlTypes.SERVICE_CONFIG, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceConfig)));
 
     Dependency dependency = Dependency.newBuilder().putAllMetadata(metadataDependency).build();
     PlanCreationContext ctx = PlanCreationContext.builder().dependency(dependency).build();
     assertThatExceptionOfType(InvalidRequestException.class)
-        .isThrownBy(() -> manifestsPlanCreator.createPlanForChildrenNodes(ctx,null))
+        .isThrownBy(() -> manifestsPlanCreator.createPlanForChildrenNodes(ctx, null))
         .withMessageContaining("Duplicate identifier: [test] in manifests");
   }
 
@@ -107,19 +105,20 @@ public class ManifestPlanCreatorTest extends CDNGTestBase {
             .build();
 
     Map<String, ByteString> metadataDependency = new HashMap<>();
-    metadataDependency.put(YamlTypes.SERVICE_CONFIG, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceConfig)));
+    metadataDependency.put(
+        YamlTypes.SERVICE_CONFIG, ByteString.copyFrom(kryoSerializer.asDeflatedBytes(serviceConfig)));
 
     Dependency dependency = Dependency.newBuilder().putAllMetadata(metadataDependency).build();
     PlanCreationContext ctx = PlanCreationContext.builder().dependency(dependency).build();
 
     LinkedHashMap<String, PlanCreationResponse> response = manifestsPlanCreator.createPlanForChildrenNodes(ctx, null);
 
-        List<String> manifestIdentifiers = new ArrayList<>();
-        for(Map.Entry<String,PlanCreationResponse> entry: response.entrySet()){
-          manifestIdentifiers.add(entry.getValue().getPlanNode().getIdentifier());
-        }
+    List<String> manifestIdentifiers = new ArrayList<>();
+    for (Map.Entry<String, PlanCreationResponse> entry : response.entrySet()) {
+      manifestIdentifiers.add(entry.getValue().getPlanNode().getIdentifier());
+    }
 
-        assertThat(manifestIdentifiers).containsExactly("m1", "m2", "m3", "m4", "m5", "m6");
+    assertThat(manifestIdentifiers).containsExactly("m1", "m2", "m3", "m4", "m5", "m6");
   }
 
   private ManifestConfigWrapper manifestWith(String identifier, ManifestConfigType type) {

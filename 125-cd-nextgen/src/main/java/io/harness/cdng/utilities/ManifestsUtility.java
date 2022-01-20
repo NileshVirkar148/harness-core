@@ -22,7 +22,6 @@ import io.harness.pms.yaml.YamlUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.util.Map;
-
 import lombok.experimental.UtilityClass;
 
 @OwnedBy(HarnessTeam.PIPELINE)
@@ -59,25 +58,16 @@ public class ManifestsUtility {
 
     if (stageOverrideField == null) {
       YamlField stageOverridesYamlField = fetchOverridesYamlField(serviceField);
-      PlanCreatorUtils.setYamlUpdate(stageOverridesYamlField,yamlUpdates);
+      PlanCreatorUtils.setYamlUpdate(stageOverridesYamlField, yamlUpdates);
       return stageOverridesYamlField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
     }
-    YamlField manifestsField =  stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
+    YamlField manifestsField = stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
     if (manifestsField == null || !EmptyPredicate.isNotEmpty(manifestsField.getNode().asArray())) {
       YamlField manifestsYamlField = fetchManifestYamlFieldUnderStageOverride(stageOverrideField);
-      PlanCreatorUtils.setYamlUpdate(manifestsYamlField,yamlUpdates);
+      PlanCreatorUtils.setYamlUpdate(manifestsYamlField, yamlUpdates);
       return manifestsYamlField;
     }
     return stageOverrideField.getNode().getField(YamlTypes.MANIFEST_LIST_CONFIG);
-  }
-
-  private static YamlUpdates.Builder setYamlUpdate(YamlField yamlField, YamlUpdates.Builder yamlUpdates) {
-    try {
-      return yamlUpdates.putFqnToYaml(yamlField.getYamlPath(), YamlUtils.writeYamlString(yamlField));
-    } catch (IOException e) {
-      throw new YamlException(
-          "Yaml created for yamlField at " + yamlField.getYamlPath() + " could not be converted into a yaml string");
-    }
   }
 
   private YamlField fetchManifestYamlFieldUnderStageOverride(YamlField stageOverride) {
@@ -91,8 +81,8 @@ public class ManifestsUtility {
             serviceField.getNode()));
   }
 
-  public YamlField fetchIndividualManifestYamlField(
-          YamlField manifestListYamlField, String individualManifestIdentifier, Map<String, YamlNode> manifestIdentifierToYamlNodeMap) {
+  public YamlField fetchIndividualManifestYamlField(YamlField manifestListYamlField,
+      String individualManifestIdentifier, Map<String, YamlNode> manifestIdentifierToYamlNodeMap) {
     if (manifestIdentifierToYamlNodeMap.containsKey(individualManifestIdentifier)) {
       return manifestIdentifierToYamlNodeMap.get(individualManifestIdentifier).getField(YamlTypes.MANIFEST_CONFIG);
     }

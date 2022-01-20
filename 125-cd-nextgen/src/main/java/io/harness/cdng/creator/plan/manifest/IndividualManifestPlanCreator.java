@@ -7,7 +7,6 @@
 
 package io.harness.cdng.creator.plan.manifest;
 
-import com.google.inject.Inject;
 import io.harness.annotations.dev.HarnessTeam;
 import io.harness.annotations.dev.OwnedBy;
 import io.harness.cdng.artifact.steps.ArtifactStep;
@@ -27,6 +26,7 @@ import io.harness.pms.sdk.core.plan.creation.beans.PlanCreationResponse;
 import io.harness.pms.sdk.core.plan.creation.creators.PartialPlanCreator;
 import io.harness.serializer.KryoSerializer;
 
+import com.google.inject.Inject;
 import java.util.*;
 
 @OwnedBy(HarnessTeam.CDC)
@@ -40,8 +40,9 @@ public class IndividualManifestPlanCreator implements PartialPlanCreator<Manifes
   @Override
   public Map<String, Set<String>> getSupportedTypes() {
     return Collections.singletonMap(YamlTypes.MANIFEST_CONFIG,
-        new HashSet<>(Arrays.asList(ManifestType.K8Manifest, ManifestType.K8Manifest,
-                ManifestType.VALUES,ManifestType.OpenshiftTemplate,ManifestType.OpenshiftTemplate,ManifestType.KustomizePatches,ManifestType.Kustomize,ManifestType.HelmChart,ManifestType.CONFIG_FILE)));
+        new HashSet<>(Arrays.asList(ManifestType.K8Manifest, ManifestType.K8Manifest, ManifestType.VALUES,
+            ManifestType.OpenshiftTemplate, ManifestType.OpenshiftTemplate, ManifestType.KustomizePatches,
+            ManifestType.Kustomize, ManifestType.HelmChart, ManifestType.CONFIG_FILE)));
   }
 
   @Override
@@ -52,18 +53,18 @@ public class IndividualManifestPlanCreator implements PartialPlanCreator<Manifes
         ctx.getDependency().getMetadataMap().get(PlanCreatorConstants.MANIFEST_STEP_PARAMETER).toByteArray());
 
     PlanNode manifestPlanNode =
-            PlanNode.builder()
-                    .uuid(manifestId)
-                    .stepType(ManifestStep.STEP_TYPE)
-                    .name(PlanCreatorConstants.MANIFEST_NODE_NAME)
-                    .identifier(stepParameters.getIdentifier())
-                    .stepParameters(stepParameters)
-                    .facilitatorObtainment(
-                            FacilitatorObtainment.newBuilder()
-                                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.SYNC).build())
-                                    .build())
-                    .skipExpressionChain(false)
-                    .build();
+        PlanNode.builder()
+            .uuid(manifestId)
+            .stepType(ManifestStep.STEP_TYPE)
+            .name(PlanCreatorConstants.MANIFEST_NODE_NAME)
+            .identifier(stepParameters.getIdentifier())
+            .stepParameters(stepParameters)
+            .facilitatorObtainment(
+                FacilitatorObtainment.newBuilder()
+                    .setType(FacilitatorType.newBuilder().setType(OrchestrationFacilitatorType.SYNC).build())
+                    .build())
+            .skipExpressionChain(false)
+            .build();
 
     return PlanCreationResponse.builder().planNode(manifestPlanNode).build();
   }
