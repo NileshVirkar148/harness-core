@@ -111,7 +111,7 @@ public class YamlGitConfigResource {
 
   @PUT
   @Path("/disable")
-  @ApiOperation(value = "Disable git experience", nickname = "disableGitSync")
+  @ApiOperation(value = "Disable git experience", nickname = "disableGitSync", hidden = true)
   public boolean putGitExperience(
       @Parameter(description = ACCOUNT_PARAM_MESSAGE) @NotBlank @QueryParam(
           NGCommonEntityConstants.ACCOUNT_KEY) @io.harness.accesscontrol.AccountIdentifier String accountId,
