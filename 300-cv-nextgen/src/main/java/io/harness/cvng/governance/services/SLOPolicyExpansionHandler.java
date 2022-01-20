@@ -49,8 +49,8 @@ public class SLOPolicyExpansionHandler implements JsonExpansionHandler {
     String accountId = metadata.getAccountId();
     String orgId = metadata.getOrgId();
     String projectId = metadata.getProjectId();
-    String serviceRef = fieldValue.get(SERVICE_CONFIG).asText(SERVICE_REF);
-    String environmentRef = fieldValue.get(INFRASTRUCTURE).asText(ENVIRONMENT_REF);
+    String serviceRef = fieldValue.get(SERVICE_CONFIG).get(SERVICE_REF).asText();
+    String environmentRef = fieldValue.get(INFRASTRUCTURE).get(ENVIRONMENT_REF).asText();
     String monitoredServiceRef = serviceRef + MONITORED_SERVICE_DELIMITER + environmentRef;
     SLOPolicyDTO sloPolicyDTO;
     ProjectParams projectParams =
@@ -79,7 +79,7 @@ public class SLOPolicyExpansionHandler implements JsonExpansionHandler {
         SLODashboardWidget.SLOGraphData sloGraphData = sliRecordService.getGraphData(serviceLevelIndicator.getUuid(),
             timePeriod.getStartTime(serviceLevelObjective.getZoneOffset()), currentTimeMinute, totalErrorBudgetMinutes,
             serviceLevelIndicator.getSliMissingDataType(), serviceLevelIndicator.getVersion());
-        if (sloErrorBudgetRemaining < sloGraphData.getErrorBudgetRemainingPercentage()) {
+        if (sloErrorBudgetRemaining > sloGraphData.getErrorBudgetRemainingPercentage()) {
           sloErrorBudgetRemaining = sloGraphData.getErrorBudgetRemainingPercentage();
         }
       }
