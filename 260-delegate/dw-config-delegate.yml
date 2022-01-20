@@ -1,5 +1,7 @@
 # Dropwizard config
 server:
+  dumpAfterStart: true
+  dumpBeforeStop: true
   allowedMethods: ["GET"]
   adminConnectors: []
   applicationConnectors:
