@@ -23,11 +23,6 @@ jobs:
           echo "DISTRIBUTE_TESTING_WORKERS=1" >> test-util.bzl
           echo "OPTIMIZED_PACKAGE_TESTS=0" >> test-util.bzl
           
-          echo "Building golang expression service protobuf using bazel..."
-          bazel build //960-expression-service/src/main/proto/... --javacopt=' -XepDisableAllChecks'
-
-      - name: Building commons code
-        run: |
           echo "Building java code using bazel..."
           bazel build //...
 
