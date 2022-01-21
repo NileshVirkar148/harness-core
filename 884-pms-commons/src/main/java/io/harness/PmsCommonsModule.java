@@ -12,7 +12,7 @@ import com.google.inject.AbstractModule;
 public class PmsCommonsModule extends AbstractModule {  
   private static PmsCommonsModule instance;
 
-  public static PmsCommonsModule getInstance() {
+  public static PmsCommonsModule getInstance() {  
     if (instance == null) {
       instance = new PmsCommonsModule();
     }
